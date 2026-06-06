@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Attendance — ClassConnect{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1.5rem;margin-bottom:2.5rem">
+  <div>
+    <h1 class="page-title">📋 Attendance Management</h1>
+    <p class="page-sub">Mark and track daily attendance for {{ cls.name }}</p>
+  </div>
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <input type="date" id="quickDate" value="{{ sel_date }}" style="padding:.5rem .75rem" onchange="window.location.href='{{ url_for('teacher_attendance') }}?date='+this.value">
+    <span style="color:var(--muted);font-size:.85rem">Quick Jump</span>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:2.5rem">
+  <!-- Mark Attendance Card -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.3rem">✏️</span>Mark Attendance
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>Select Date</label>
+        <input type="date" name="att_date" value="{{ sel_date }}" required style="border:1.5px solid var(--primary)">
+      </div>
+      
+      {% if students %}
+      <div style="background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;border:1px solid var(--border);max-height:400px;overflow-y:auto">
+        <div style="background:rgba(99,102,241,.1);padding:.75rem 1rem;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:grid;grid-template-columns:1fr auto;gap:1rem;font-weight:700;position:sticky;top:0">
+          <span>Student Name</span><span>Status</span>
+        </div>
+        {% for s in students %}
+        <div style="padding:.8rem 1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:1rem;transition:background .2s;hover {background:rgba(99,102,241,.05)}">
+          <div>
+            <div style="font-weight:600;font-size:.9rem;color:var(--text)">{{ s.name }}</div>
+            <div style="font-size:.72rem;color:var(--muted);font-family:monospace;margin-top:.1rem">{{ s.usn }}</div>
+          </div>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            {% set cur = existing.get(s.id, 'absent') %}
+            <input class="att-radio" type="radio" name="status_{{ s.id }}" id="p_{{ s.id }}" value="present" {% if cur=='present' %}checked{% endif %}>
+            <label class="att-label" for="p_{{ s.id }}">P</label>
+            <input class="att-radio" type="radio" name="status_{{ s.id }}" id="a_{{ s.id }}" value="absent" {% if cur=='absent' %}checked{% endif %}>
+            <label class="att-label" for="a_{{ s.id }}">A</label>
+            <input class="att-radio" type="radio" name="status_{{ s.id }}" id="l_{{ s.id }}" value="late" {% if cur=='late' %}checked{% endif %}>
+            <label class="att-label" for="l_{{ s.id }}">L</label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem">
+        💾 Save Attendance for {{ sel_date }}
+      </button>
+      {% else %}
+      <div class="empty" style="padding:2rem;background:var(--surface2);border-radius:8px">
+        <div class="empty-icon">👥</div>
+        <p>No students enrolled in this class yet.</p>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Summary Card -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.3rem">📊</span>Attendance Summary
+    </div>
+    {% if summary %}
+    <div style="display:grid;gap:.8rem;max-height:500px;overflow-y:auto">
+      {% for s in summary %}
+      {% set pct = ((s.present_count / s.total_days) * 100) | round | int if s.total_days > 0 else 0 %}
+      <div style="background:linear-gradient(135deg,rgba(99,102,241,.05),rgba(16,185,129,.02));border-radius:8px;padding:1rem;border:1px solid var(--border);transition:all .2s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem">
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:var(--text)">{{ s.name }}</div>
+            <div style="font-size:.72rem;color:var(--muted);font-family:monospace;margin-top:.15rem">{{ s.usn }}</div>
+          </div>
+          <span class="badge {% if pct >= 75 %}badge-green{% elif pct >= 50 %}badge-amber{% else %}badge-red{% endif %}" style="font-size:.8rem;padding:.35rem .65rem">
+            {{ pct }}%
+          </span>
+        </div>
+        <div class="prog-bar" style="margin-top:.5rem">
+          <div class="prog-fill {% if pct >= 75 %}green{% elif pct >= 50 %}amber{% else %}red{% endif %}"
+               style="width:{{ pct }}%"></div>
+        </div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.4rem;display:flex;justify-content:space-between">
+          <span>{{ s.present_count }} of {{ s.total_days }} days present</span>
+          <span>{{ (s.total_days - s.present_count) if s.total_days > 0 else 0 }} absent</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty" style="padding:2rem;background:var(--surface2);border-radius:8px">
+      <div class="empty-icon">📊</div>
+      <p>No attendance data recorded yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Statistics Row -->
+{% if summary %}
+<div class="stats">
+  <div class="stat green">
+    <div class="stat-num">{{ summary|length }}</div>
+    <div class="stat-label">Total Students</div>
+  </div>
+  {% set avg_pct = ((summary|map(attribute='present_count')|sum / (summary|length * (summary|map(attribute='total_days')|max or 1)) * 100)|int) if summary else 0 %}
+  <div class="stat purple">
+    <div class="stat-num">{{ avg_pct }}%</div>
+    <div class="stat-label">Avg Attendance</div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

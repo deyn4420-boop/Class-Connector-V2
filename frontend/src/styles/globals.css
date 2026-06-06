@@ -1,0 +1,169 @@
+/**
+ * Global Tailwind CSS styles
+ */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  body {
+    @apply bg-bg text-text font-outfit;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-syne font-bold;
+  }
+
+  input, textarea, select {
+    @apply bg-surface-2 border border-border rounded-xs px-4 py-2 text-text focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply text-muted/60;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xs font-bold text-sm font-outfit cursor-pointer border-none transition-all duration-200 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-primary-h text-white shadow-sm hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed hover:shadow-sm hover:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-2 text-text border border-border hover:border-primary hover:bg-surface-3;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border border-border text-text hover:bg-surface-2 hover:border-primary;
+  }
+
+  .btn-sm {
+    @apply px-2 py-1 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  .card {
+    @apply bg-gradient-to-br from-surface to-surface-2 border border-border rounded-base p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-md;
+  }
+
+  .card-title {
+    @apply text-lg font-bold mb-4 text-text;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  .badge-primary {
+    @apply bg-primary/20 text-primary-light;
+  }
+
+  .badge-success {
+    @apply bg-green/20 text-green;
+  }
+
+  .badge-warning {
+    @apply bg-amber/20 text-amber;
+  }
+
+  .badge-error {
+    @apply bg-red/20 text-red;
+  }
+
+  .stat {
+    @apply bg-gradient-to-br from-surface to-surface-2 border border-border rounded-base p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md;
+  }
+
+  .stat-value {
+    @apply text-4xl font-bold font-syne mb-2;
+  }
+
+  .stat-label {
+    @apply text-xs font-bold text-muted uppercase tracking-wider;
+  }
+
+  .input-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .label {
+    @apply text-xs font-bold text-muted uppercase tracking-wider;
+  }
+
+  .divider {
+    @apply border-t border-border;
+  }
+
+  .skeleton {
+    @apply bg-surface-2 animate-pulse rounded-xs;
+  }
+
+  .fade-in-up {
+    @apply animate-fadeInUp;
+  }
+
+  .slide-in-left {
+    @apply animate-slideInLeft;
+  }
+}
+
+/* Accessibility improvements */
+@layer utilities {
+  .sr-only {
+    @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden clip-path-inset;
+  }
+
+  .focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-bg;
+  }
+
+  .scroll-smooth {
+    @apply scroll-smooth;
+  }
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 1000px 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-3);
+}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Assignments — ClassConnect{% endblock %}
+{% block content %}
+<div style="margin-bottom:2.5rem">
+  <h1 class="page-title">📝 Your Assignments</h1>
+  <p class="page-sub">Submit before the deadline to avoid overdue notifications</p>
+</div>
+
+{% if assignments %}
+<div style="display:grid;gap:1.25rem">
+  {% for a in assignments %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;color:var(--text)">{{ a.title }}</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-top:.3rem">{{ a.cname }}</div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+        {% if a.subject %}<span class="badge badge-purple" style="font-weight:700">{{ a.subject }}</span>{% endif %}
+        {% if a.submitted %}
+          <span class="badge badge-green" style="font-weight:700;padding:.35rem .8rem">✅ Submitted</span>
+        {% else %}
+          <span class="badge badge-amber" style="font-weight:700;padding:.35rem .8rem">⏳ Pending</span>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if a.description %}
+    <div style="background:var(--surface2);border-left:3px solid var(--primary);border-radius:6px;padding:1rem;margin:1rem 0;font-size:.88rem;line-height:1.6;color:var(--muted)">
+      {{ a.description }}
+    </div>
+    {% endif %}
+    
+    <div style="display:flex;gap:1.5rem;margin:1rem 0;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--amber);font-weight:600">
+        📅 <span>Due: {{ a.deadline[:16] }}</span>
+      </div>
+      {% if a.deadline > now() %}
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--green)">
+          ⏱️ <span>On time</span>
+        </div>
+      {% else %}
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--red);font-weight:700">
+          ⚠️ <span>OVERDUE!</span>
+        </div>
+      {% endif %}
+    </div>
+    
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;opacity:.5">
+    
+    {% if a.submitted %}
+      <div style="padding:1rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:8px;text-align:center">
+        <div style="font-weight:700;color:var(--green);margin-bottom:.3rem">✅ Submission Complete</div>
+        <div style="font-size:.82rem;color:var(--muted)">Submitted on time. Great job!</div>
+      </div>
+    {% else %}
+      <details style="margin-top:1rem">
+        <summary style="cursor:pointer;color:var(--primary);font-size:.92rem;font-weight:700;list-style:none;padding:.5rem;user-select:none;display:flex;align-items:center;gap:.6rem">
+          <span style="display:inline-block;transition:transform .2s">▶</span>
+          <span>📤 Submit Your Work</span>
+        </summary>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <form method="POST" enctype="multipart/form-data" style="display:grid;gap:1rem">
+            <input type="hidden" name="assignment_id" value="{{ a.id }}">
+            
+            <div class="form-group">
+              <label>✍️ Your Answer / Work</label>
+              <textarea name="content" style="min-height:120px" placeholder="Write your work, analysis, or paste your code here..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>📎 Attach Files (Optional)</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="file_{{ a.id }}" multiple accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.zip" onchange="updateFileList(this, '{{ a.id }}')">
+                <label for="file_{{ a.id }}" class="file-input-label">
+                  <span style="font-size:1.5rem">📁</span>
+                  <div>
+                    <div style="font-weight:700;color:var(--primary)">Click to upload or drag files</div>
+                    <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">PDF, DOC, DOCX, XLS, XLSX, PPT, ZIP, Images (max 25MB)</div>
+                  </div>
+                </label>
+              </div>
+              <div id="file-list-{{ a.id }}" class="file-list"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-green" style="justify-content:center;gap:.6rem;margin-top:.5rem">
+              <span style="font-size:1rem">✅</span> Submit Assignment
+            </button>
+          </form>
+        </div>
+      </details>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty" style="padding:3rem">
+  <div class="empty-icon">📝</div>
+  <p>No assignments yet. Check back soon!</p>
+</div>
+{% endif %}
+
+<script>
+function updateFileList(input, id) {
+  const list = document.getElementById('file-list-' + id);
+  list.innerHTML = '';
+  if (input.files.length > 0) {
+    for (let file of input.files) {
+      const size = (file.size / 1024 / 1024).toFixed(2);
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `
+        <span class="file-name">📄 ${file.name}</span>
+        <span class="file-size">${size}MB</span>
+      `;
+      list.appendChild(item);
+    }
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}ClassConnect{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#080d17;--bg-light:#0f1623;--surface:#111827;--surface2:#1f2937;--surface3:#2d3748;--border:#2d3748;
+          --primary:#6366f1;--primary-h:#4f46e5;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;
+          --red:#ef4444;--text:#f1f5f9;--muted:#9ca3af;--radius:12px;--shadow:0 10px 30px rgba(0,0,0,0.3)}
+    html{scroll-behavior:smooth}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+    h1,h2,h3,h4{font-family:'Syne',sans-serif;font-weight:700}
+    a{text-decoration:none;color:inherit}
+
+    nav{background:linear-gradient(135deg, var(--surface) 0%, var(--bg-light) 100%);backdrop-filter:blur(10px);
+        border-bottom:1px solid rgba(99,102,241,.1);padding:0 1.5rem;display:flex;align-items:center;
+        justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow: 0 4px 12px rgba(0,0,0,0.2)}
+    .nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--primary),var(--primary-light));
+               -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .nav-brand span{color:var(--green)}
+    .nav-links{display:flex;gap:.25rem;align-items:center;flex-wrap:wrap}
+    .nav-links a{color:var(--muted);padding:.4rem .8rem;border-radius:8px;font-size:.82rem;font-weight:500;
+                 transition:all .25s;position:relative;overflow:hidden}
+    .nav-links a::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(16,185,129,.1));
+                        opacity:0;transition:opacity .25s;border-radius:8px;z-index:-1}
+    .nav-links a:hover::before{opacity:1}
+    .nav-links a:hover,.nav-links a.active{color:var(--text);background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)}
+    .nav-right{display:flex;align-items:center;gap:.75rem}
+    .nav-id{font-size:.75rem;color:var(--muted);padding:.35rem .75rem;background:rgba(99,102,241,.1);
+            border:1px solid rgba(99,102,241,.2);border-radius:6px;font-family:monospace;font-weight:600}
+
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.8}}
+
+    .container{max-width:1200px;margin:0 auto;padding:2.5rem 1.5rem;animation:fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) both}
+    .page-title{font-size:2.2rem;font-weight:800;margin-bottom:.5rem;background:linear-gradient(135deg,var(--text),var(--muted));
+                -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .page-sub{color:var(--muted);margin-bottom:2rem;font-size:.95rem;font-weight:500}
+
+    .card{background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1px solid var(--border);
+          border-radius:var(--radius);padding:1.75rem;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+          position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(99,102,241,.1),transparent);
+                  opacity:0;transition:opacity .3s;pointer-events:none}
+    .card:hover{transform:translateY(-4px);border-color:rgba(99,102,241,.3);box-shadow:var(--shadow)}
+    .card:hover::before{opacity:1}
+    .card-title{font-size:1.05rem;font-weight:700;margin-bottom:1.25rem;color:var(--text)}
+
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.25rem;margin-bottom:2.5rem}
+    .stat{background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1px solid var(--border);
+          border-radius:var(--radius);padding:1.5rem;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);cursor:pointer;position:relative}
+    .stat:hover{transform:translateY(-4px);border-color:rgba(99,102,241,.4);box-shadow:var(--shadow)}
+    .stat-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;margin-bottom:.5rem}
+    .stat-label{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+    .stat.green .stat-num{color:var(--green)}.stat.purple .stat-num{color:var(--primary)}
+    .stat.amber .stat-num{color:var(--amber)}.stat.red .stat-num{color:var(--red)}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.75rem}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem}
+    @media(max-width:900px){.grid-3{grid-template-columns:1fr 1fr}}
+    @media(max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+    .form-group{margin-bottom:1.25rem}
+    label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.75px}
+    input,textarea,select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;
+        padding:.75rem 1rem;color:var(--text);font-family:'Outfit',sans-serif;font-size:.93rem;outline:none;
+        transition:all .25s;font-weight:500}
+    input::placeholder,textarea::placeholder{color:var(--muted);opacity:.6}
+    input:focus,textarea:focus,select:focus{border-color:var(--primary);background:rgba(99,102,241,.05);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+    input[type="file"]{padding:.5rem}
+    textarea{resize:vertical;min-height:120px}
+    select option{background:var(--surface);color:var(--text)}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.6rem 1.3rem;border-radius:8px;
+         font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;border:none;
+         transition:all 0.25s cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden;text-transform:uppercase;letter-spacing:.5px}
+    .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+                 opacity:0;transition:opacity .3s;transform:translateX(-100%)}
+    .btn:hover::before{opacity:1;transform:translateX(100%)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-h));color:#fff;box-shadow:0 4px 12px rgba(99,102,241,.3)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
+    .btn-green{background:linear-gradient(135deg,var(--green),#059669);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3)}
+    .btn-green:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(16,185,129,.4)}
+    .btn-amber{background:linear-gradient(135deg,var(--amber),#d97706);color:#000;box-shadow:0 4px 12px rgba(245,158,11,.3)}
+    .btn-amber:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,158,11,.4)}
+    .btn-red{background:transparent;color:var(--red);border:1.5px solid var(--red);box-shadow:none}
+    .btn-red:hover{background:rgba(239,68,68,.1);transform:translateY(-2px);box-shadow:0 4px 12px rgba(239,68,68,.25)}
+    .btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1.5px solid var(--border)}
+    .btn-ghost:hover{border-color:var(--primary);background:rgba(99,102,241,.1);color:var(--primary)}
+    .btn-sm{padding:.35rem .75rem;font-size:.75rem}
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    th{text-align:left;color:var(--muted);font-size:.73rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;
+       padding:.8rem 1rem;border-bottom:1.5px solid var(--border);background:rgba(99,102,241,.05)}
+    td{padding:.9rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(99,102,241,.05);transition:background .15s}
+
+    .badge{display:inline-block;padding:.25rem .65rem;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+    .badge-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+    .badge-amber{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+    .badge-purple{background:rgba(99,102,241,.15);color:var(--primary);border:1px solid rgba(99,102,241,.3)}
+    .badge-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+    .badge-gray{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+    .flash{padding:1rem 1.25rem;border-radius:8px;font-size:.88rem;margin-bottom:1rem;font-weight:600;border-left:4px solid;
+           animation:slideInLeft .3s cubic-bezier(0.16,1,0.3,1)}
+    .flash.success{background:rgba(16,185,129,.1);color:var(--green);border-left-color:var(--green)}
+    .flash.error{background:rgba(239,68,68,.1);color:var(--red);border-left-color:var(--red)}
+    .flashes{margin-bottom:1.5rem;margin-top:.5rem}
+
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:200;
+              align-items:center;justify-content:center;animation:fadeInUp .3s}
+    .modal-bg.open{display:flex}
+    .modal{background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1.5px solid var(--border);
+           border-radius:var(--radius);padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+           animation:slideInUp .3s cubic-bezier(0.16,1,0.3,1);box-shadow:var(--shadow)}
+    @keyframes slideInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .modal-title{font-size:1.3rem;font-weight:800;margin-bottom:1.5rem;color:var(--text)}
+    .modal-close{float:right;cursor:pointer;background:none;border:none;color:var(--muted);font-size:1.5rem;
+                 transition:all .2s;padding:.5rem}
+    .modal-close:hover{color:var(--red);transform:rotate(90deg)}
+
+    .empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
+    .empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.7}
+    .empty p{font-size:.95rem}
+    .notif-item{padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.86rem;transition:all .2s}
+    .notif-item:last-child{border-bottom:none}
+    .notif-item:hover{padding-left:.5rem;color:var(--primary)}
+    .notif-time{font-size:.72rem;color:var(--muted);margin-top:.25rem;font-weight:500}
+    .member-list{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
+    .member-chip{background:var(--surface2);border:1px solid rgba(99,102,241,.2);border-radius:20px;padding:.25rem .7rem;
+                 font-size:.75rem;font-weight:600;transition:all .2s}
+    .member-chip:hover{border-color:var(--primary);background:rgba(99,102,241,.1)}
+    .code-box{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(16,185,129,.05));border:2px dashed rgba(99,102,241,.3);
+              border-radius:var(--radius);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1.5rem;margin:1.5rem 0}
+    .code-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--primary);letter-spacing:3px}
+
+    /* Progress bar */
+    .prog-bar{background:var(--surface2);border-radius:20px;height:10px;overflow:hidden;margin-top:.4rem;border:1px solid var(--border)}
+    .prog-fill{height:100%;border-radius:20px;transition:width .5s cubic-bezier(0.16,1,0.3,1);position:relative}
+    .prog-fill.green{background:linear-gradient(90deg,var(--green),#10b981)}.prog-fill.amber{background:linear-gradient(90deg,var(--amber),#f59e0b)}
+    .prog-fill.red{background:linear-gradient(90deg,var(--red),#ef4444)}
+
+    /* Attendance status buttons */
+    .att-radio{display:none}
+    .att-label{padding:.35rem 1rem;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:700;border:1.5px solid var(--border);
+               color:var(--muted);transition:all .2s;text-transform:uppercase;letter-spacing:.3px}
+    .att-radio:checked+.att-label{border-color:transparent;font-weight:700}
+    .att-radio[value="present"]:checked+.att-label{background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(16,185,129,.1));
+                                                    color:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(16,185,129,.2)}
+    .att-radio[value="absent"]:checked+.att-label{background:linear-gradient(135deg,rgba(239,68,68,.3),rgba(239,68,68,.1));
+                                                   color:var(--red);border-color:var(--red);box-shadow:0 0 8px rgba(239,68,68,.2)}
+    .att-radio[value="late"]:checked+.att-label{background:linear-gradient(135deg,rgba(245,158,11,.3),rgba(245,158,11,.1));
+                                                 color:var(--amber);border-color:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.2)}
+
+    /* File upload styling */
+    .file-input-wrapper{position:relative;overflow:hidden;display:inline-block;width:100%}
+    .file-input-wrapper input[type="file"]{position:absolute;left:-9999px}
+    .file-input-label{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:2rem;border:2px dashed var(--primary);
+                      border-radius:8px;cursor:pointer;transition:all .3s;background:rgba(99,102,241,.05)}
+    .file-input-label:hover{background:rgba(99,102,241,.1);border-color:var(--primary-light)}
+    .file-icon{font-size:1.5rem}
+    .file-list{margin-top:1rem;display:flex;flex-direction:column;gap:.5rem}
+    .file-item{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--surface2);
+               border:1px solid var(--border);border-radius:6px;font-size:.85rem;animation:slideInLeft .3s}
+    .file-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--primary)}
+    .file-size{color:var(--muted);font-size:.75rem;margin-left:1rem}
+    .file-remove{cursor:pointer;color:var(--red);font-weight:700;transition:all .2s;padding:.25rem .5rem}
+    .file-remove:hover{background:rgba(239,68,68,.1);border-radius:4px}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:var(--surface)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+  </style>
+</head>
+<body>
+{% if session.user_id %}
+<nav>
+  <a class="nav-brand" href="/">Class<span>Connect</span></a>
+  {% if session.role == 'teacher' %}
+  <div class="nav-links">
+    <a href="{{ url_for('teacher_dashboard') }}" {% if request.endpoint=='teacher_dashboard' %}class="active"{% endif %}>📊 Dashboard</a>
+    <a href="{{ url_for('teacher_notes') }}" {% if request.endpoint=='teacher_notes' %}class="active"{% endif %}>📄 Notes</a>
+    <a href="{{ url_for('teacher_assignments') }}" {% if request.endpoint=='teacher_assignments' %}class="active"{% endif %}>📝 Assignments</a>
+    <a href="{{ url_for('teacher_groups') }}" {% if request.endpoint=='teacher_groups' %}class="active"{% endif %}>👥 Groups</a>
+    <a href="{{ url_for('teacher_attendance') }}" {% if request.endpoint=='teacher_attendance' %}class="active"{% endif %}>📋 Attendance</a>
+    <a href="{{ url_for('teacher_progress') }}" {% if request.endpoint=='teacher_progress' %}class="active"{% endif %}>📈 Progress</a>
+    <a href="{{ url_for('teacher_events') }}" {% if request.endpoint=='teacher_events' %}class="active"{% endif %}>📅 Events</a>
+    <a href="{{ url_for('teacher_submissions') }}" {% if request.endpoint=='teacher_submissions' %}class="active"{% endif %}>📬 Submissions</a>
+    <a href="{{ url_for('teacher_settings') }}" {% if request.endpoint=='teacher_settings' %}class="active"{% endif %}>⚙️</a>
+  </div>
+  {% else %}
+  <div class="nav-links">
+    <a href="{{ url_for('student_dashboard') }}" {% if request.endpoint=='student_dashboard' %}class="active"{% endif %}>📊 Dashboard</a>
+    <a href="{{ url_for('student_notes') }}" {% if request.endpoint=='student_notes' %}class="active"{% endif %}>📄 Notes</a>
+    <a href="{{ url_for('student_assignments') }}" {% if request.endpoint=='student_assignments' %}class="active"{% endif %}>📝 Assignments</a>
+    <a href="{{ url_for('student_groups') }}" {% if request.endpoint=='student_groups' %}class="active"{% endif %}>👥 Groups</a>
+    <a href="{{ url_for('student_attendance') }}" {% if request.endpoint=='student_attendance' %}class="active"{% endif %}>📋 Attendance</a>
+    <a href="{{ url_for('student_progress') }}" {% if request.endpoint=='student_progress' %}class="active"{% endif %}>📈 Progress</a>
+  </div>
+  {% endif %}
+  <div class="nav-right">
+    <span class="nav-id">{{ session.usn or session.staff_id or session.name }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-red">Logout</a>
+  </div>
+</nav>
+{% endif %}
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flashes">{% for c,m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>
+           padding:1.75rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+    .modal-title{font-size:1.05rem;font-weight:700;margin-bottom:1.25rem}
+    .modal-close{float:right;cursor:pointer;background:none;border:none;color:var(--muted);font-size:1.1rem}
+
+    .empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+    .empty-icon{font-size:2.5rem;margin-bottom:.5rem}
+    .notif-item{padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.86rem}
+    .notif-item:last-child{border-bottom:none}
+    .notif-time{font-size:.73rem;color:var(--muted);margin-top:.15rem}
+    .member-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+    .member-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:.18rem .6rem;font-size:.76rem}
+    .code-box{background:var(--surface2);border:2px dashed var(--primary);border-radius:var(--radius);padding:.85rem 1.25rem;display:flex;align-items:center;gap:1rem}
+    .code-val{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;color:var(--primary);letter-spacing:4px}
+
+    /* Progress bar */
+    .prog-bar{background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;margin-top:.3rem}
+    .prog-fill{height:100%;border-radius:20px;transition:width .5s}
+    .prog-fill.green{background:var(--green)}.prog-fill.amber{background:var(--amber)}.prog-fill.red{background:var(--red)}
+
+    /* Attendance status buttons */
+    .att-radio{display:none}
+    .att-label{padding:.3rem .8rem;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600;border:1px solid var(--border);color:var(--muted)}
+    .att-radio:checked+.att-label{border-color:transparent}
+    .att-radio[value="present"]:checked+.att-label{background:rgba(16,185,129,.2);color:var(--green);border-color:var(--green)}
+    .att-radio[value="absent"]:checked+.att-label{background:rgba(239,68,68,.2);color:var(--red);border-color:var(--red)}
+    .att-radio[value="late"]:checked+.att-label{background:rgba(245,158,11,.2);color:var(--amber);border-color:var(--amber)}
+  </style>
+</head>
+<body>
+{% if session.user_id %}
+<nav>
+  <a class="nav-brand" href="/">Class<span>Connect</span></a>
+  {% if session.role == 'teacher' %}
+  <div class="nav-links">
+    <a href="{{ url_for('teacher_dashboard') }}" {% if request.endpoint=='teacher_dashboard' %}class="active"{% endif %}>Dashboard</a>
+    <a href="{{ url_for('teacher_notes') }}" {% if request.endpoint=='teacher_notes' %}class="active"{% endif %}>Notes</a>
+    <a href="{{ url_for('teacher_assignments') }}" {% if request.endpoint=='teacher_assignments' %}class="active"{% endif %}>Assignments</a>
+    <a href="{{ url_for('teacher_groups') }}" {% if request.endpoint=='teacher_groups' %}class="active"{% endif %}>Groups</a>
+    <a href="{{ url_for('teacher_attendance') }}" {% if request.endpoint=='teacher_attendance' %}class="active"{% endif %}>Attendance</a>
+    <a href="{{ url_for('teacher_progress') }}" {% if request.endpoint=='teacher_progress' %}class="active"{% endif %}>Progress</a>
+    <a href="{{ url_for('teacher_events') }}" {% if request.endpoint=='teacher_events' %}class="active"{% endif %}>Events</a>
+    <a href="{{ url_for('teacher_submissions') }}" {% if request.endpoint=='teacher_submissions' %}class="active"{% endif %}>Submissions</a>
+    <a href="{{ url_for('teacher_settings') }}" {% if request.endpoint=='teacher_settings' %}class="active"{% endif %}>⚙️</a>
+  </div>
+  {% else %}
+  <div class="nav-links">
+    <a href="{{ url_for('student_dashboard') }}" {% if request.endpoint=='student_dashboard' %}class="active"{% endif %}>Dashboard</a>
+    <a href="{{ url_for('student_notes') }}" {% if request.endpoint=='student_notes' %}class="active"{% endif %}>Notes</a>
+    <a href="{{ url_for('student_assignments') }}" {% if request.endpoint=='student_assignments' %}class="active"{% endif %}>Assignments</a>
+    <a href="{{ url_for('student_groups') }}" {% if request.endpoint=='student_groups' %}class="active"{% endif %}>Groups</a>
+    <a href="{{ url_for('student_attendance') }}" {% if request.endpoint=='student_attendance' %}class="active"{% endif %}>Attendance</a>
+    <a href="{{ url_for('student_progress') }}" {% if request.endpoint=='student_progress' %}class="active"{% endif %}>My Progress</a>
+  </div>
+  {% endif %}
+  <div class="nav-right">
+    <span class="nav-id">{{ session.usn or session.staff_id or session.name }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-red">Logout</a>
+  </div>
+</nav>
+{% endif %}
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flashes">{% for c,m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,31 @@
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+/**
+ * Assignments Page Component
+ */
+import { useState } from 'react';
+import { Card, Button, Badge, Input, Textarea, Modal, Skeleton } from '@/components/ui';
+import { useAsync, useForm } from '@/hooks';
+import { apiClient } from '@/utils/api';
+import { FileText, Plus, Send, AlertCircle } from 'lucide-react';
+import { format } from 'date-fns';
+export const StudentAssignments = () => {
+    const { data: assignments, loading, error } = useAsync(() => apiClient.getAssignments().then((res) => res.data || []));
+    if (error) {
+        return (_jsxs("div", { className: "p-6 text-center", children: [_jsx(AlertCircle, { size: 48, className: "mx-auto mb-2 text-red" }), _jsx("p", { className: "text-red", children: "Failed to load assignments" })] }));
+    }
+    return (_jsx("main", { className: "flex-1 overflow-auto", children: _jsxs("div", { className: "p-6 max-w-5xl mx-auto animate-fadeInUp", children: [_jsx("div", { className: "flex justify-between items-center mb-8", children: _jsxs("div", { children: [_jsx("h2", { className: "text-4xl font-bold mb-2", children: "\uD83D\uDCDD Assignments" }), _jsx("p", { className: "text-muted", children: "Track your pending and completed assignments" })] }) }), loading ? (_jsx("div", { className: "space-y-4", children: _jsx(Skeleton, { count: 3, className: "h-24" }) })) : assignments && assignments.length > 0 ? (_jsx("div", { className: "space-y-4", children: assignments.map((assignment) => {
+                        const isOverdue = new Date(assignment.deadline) < new Date();
+                        return (_jsx(Card, { className: "hover:shadow-lg transition-all", children: _jsxs("div", { className: "flex justify-between items-start gap-4", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "flex items-center gap-2 mb-2", children: [_jsx(FileText, { size: 20, className: "text-primary" }), _jsx("h3", { className: "text-lg font-bold", children: assignment.title }), isOverdue && _jsx(Badge, { variant: "error", children: "Overdue" })] }), _jsx("p", { className: "text-muted text-sm mb-3", children: assignment.description }), _jsxs("p", { className: "text-xs text-muted", children: ["Due: ", format(new Date(assignment.deadline), 'PPpp')] })] }), _jsxs(Button, { size: "sm", className: "flex-shrink-0", children: [_jsx(Send, { size: 16 }), "Submit"] })] }) }, assignment.id));
+                    }) })) : (_jsxs("div", { className: "card text-center py-12", children: [_jsx(FileText, { size: 48, className: "mx-auto mb-4 text-muted opacity-50" }), _jsx("p", { className: "text-muted", children: "No assignments yet" })] }))] }) }));
+};
+export const TeacherAssignments = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const { data: assignments, loading } = useAsync(() => apiClient.getAssignments().then((res) => res.data || []), [refreshKey]);
+    const { values, errors, isSubmitting, handleChange, handleSubmit } = useForm({ title: '', description: '', deadline: '' }, async (values) => {
+        await apiClient.createAssignment(values.title, values.description, values.deadline);
+        setIsModalOpen(false);
+        setRefreshKey((prev) => prev + 1);
+    });
+    return (_jsx("main", { className: "flex-1 overflow-auto", children: _jsxs("div", { className: "p-6 max-w-5xl mx-auto animate-fadeInUp", children: [_jsxs("div", { className: "flex justify-between items-center mb-8", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-4xl font-bold mb-2", children: "\uD83D\uDCDD Assignments" }), _jsx("p", { className: "text-muted", children: "Create and manage class assignments" })] }), _jsxs(Button, { onClick: () => setIsModalOpen(true), children: [_jsx(Plus, { size: 18 }), "New Assignment"] })] }), _jsx(Modal, { isOpen: isModalOpen, title: "New Assignment", onClose: () => setIsModalOpen(false), actions: _jsxs(_Fragment, { children: [_jsx(Button, { variant: "ghost", onClick: () => setIsModalOpen(false), children: "Cancel" }), _jsx(Button, { variant: "primary", onClick: () => handleSubmit(), isLoading: isSubmitting, children: "Create" })] }), children: _jsxs("form", { className: "space-y-4", children: [_jsx(Input, { label: "Title", name: "title", placeholder: "Assignment title", value: values.title, onChange: handleChange, error: errors.title }), _jsx(Textarea, { label: "Description", name: "description", placeholder: "What students need to do...", value: values.description, onChange: handleChange, error: errors.description }), _jsx(Input, { label: "Deadline", name: "deadline", type: "datetime-local", value: values.deadline, onChange: handleChange, error: errors.deadline })] }) }), loading ? (_jsx("div", { className: "space-y-4", children: _jsx(Skeleton, { count: 3, className: "h-24" }) })) : assignments && assignments.length > 0 ? (_jsx("div", { className: "space-y-4", children: assignments.map((assignment) => (_jsx(Card, { children: _jsxs("div", { className: "flex justify-between items-start", children: [_jsxs("div", { className: "flex-1", children: [_jsx("h3", { className: "text-lg font-bold mb-2", children: assignment.title }), _jsx("p", { className: "text-muted text-sm mb-3", children: assignment.description }), _jsxs("p", { className: "text-xs text-muted", children: ["Due: ", format(new Date(assignment.deadline), 'PPpp')] })] }), _jsx(Button, { variant: "secondary", size: "sm", children: "View Submissions" })] }) }, assignment.id))) })) : (_jsxs(Card, { className: "text-center py-12", children: [_jsx(FileText, { size: 48, className: "mx-auto mb-4 text-muted opacity-50" }), _jsx("p", { className: "text-muted", children: "No assignments created yet" })] }))] }) }));
+};

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Assignments — ClassConnect{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1.5rem;margin-bottom:2.5rem">
+  <div>
+    <h1 class="page-title">📝 Assignments</h1>
+    <p class="page-sub">Create, manage and track assignment submissions — reminders sent automatically</p>
+  </div>
+  <button class="btn btn-primary" onclick="document.getElementById('add-modal').classList.add('open')" style="gap:.6rem">
+    <span style="font-size:1.1rem">➕</span> New Assignment
+  </button>
+</div>
+
+{% if assignments %}
+<div class="card" style="overflow:hidden">
+  <table style="margin:-1.75rem">
+    <thead>
+      <tr style="background:rgba(99,102,241,.08)">
+        <th style="padding:1rem 1.5rem">Title & Description</th>
+        <th style="padding:1rem 1.5rem">Subject</th>
+        <th style="padding:1rem 1.5rem;text-align:center">Deadline</th>
+        <th style="padding:1rem 1.5rem;text-align:right">Submissions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in assignments %}
+      <tr>
+        <td style="padding:1rem 1.5rem">
+          <div style="font-weight:700;font-size:.95rem;color:var(--text)">{{ a.title }}</div>
+          {% if a.description %}
+          <div style="font-size:.8rem;color:var(--muted);margin-top:.3rem;line-height:1.4">{{ a.description[:60] }}{% if a.description|length>60 %}...{% endif %}</div>
+          {% endif %}
+        </td>
+        <td style="padding:1rem 1.5rem">
+          <span class="badge badge-purple" style="font-weight:700">{{ a.subject or 'General' }}</span>
+        </td>
+        <td style="padding:1rem 1.5rem;text-align:center">
+          <div style="font-family:monospace;font-weight:600;font-size:.88rem">{{ a.deadline[:10] }}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">{{ a.deadline[11:16] }}</div>
+        </td>
+        <td style="padding:1rem 1.5rem;text-align:right">
+          {% set pct = ((a.subs / total_students) * 100) | round | int if total_students > 0 else 0 %}
+          <div style="display:flex;align-items:center;gap:.8rem;justify-content:flex-end">
+            <div style="flex-direction:column;display:flex;align-items:flex-end;gap:.2rem">
+              <span style="font-weight:700;font-size:.9rem">{{ a.subs }}/{{ total_students }}</span>
+              <span style="font-size:.72rem;color:var(--muted)">{{ pct }}% submitted</span>
+            </div>
+            <div style="width:50px">
+              <div class="prog-bar" style="margin:0">
+                <div class="prog-fill {% if pct >= 75 %}green{% elif pct >= 40 %}amber{% else %}red{% endif %}" style="width:{{ pct }}%;height:6px"></div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty" style="padding:3rem">
+  <div class="empty-icon">📝</div>
+  <p>No assignments created yet. Click "New Assignment" to get started.</p>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stats" style="margin-top:2.5rem">
+  <div class="stat purple">
+    <div class="stat-num">{{ assignments|length }}</div>
+    <div class="stat-label">Total Assignments</div>
+  </div>
+  <div class="stat green">
+    <div class="stat-num">{{ total_students }}</div>
+    <div class="stat-label">Students</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="add-modal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem">
+      <div class="modal-title" style="margin:0">Create New Assignment</div>
+      <button class="modal-close" onclick="document.getElementById('add-modal').classList.remove('open')">✕</button>
+    </div>
+    <form method="POST">
+      <div class="form-group">
+        <label>📋 Assignment Title</label>
+        <input type="text" name="title" placeholder="e.g. Database Design Project" required>
+      </div>
+      <div class="form-group">
+        <label>📚 Subject / Course</label>
+        <input type="text" name="subject" placeholder="e.g. DBMS, Web Development">
+      </div>
+      <div class="form-group">
+        <label>📝 Description & Instructions</label>
+        <textarea name="description" placeholder="Detailed instructions for students..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>⏰ Deadline (Date & Time)</label>
+        <input type="datetime-local" name="deadline" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1.5rem">
+        ✅ Create Assignment
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

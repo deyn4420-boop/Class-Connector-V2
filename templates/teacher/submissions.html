@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Submissions — ClassConnect{% endblock %}
+{% block content %}
+<div style="margin-bottom:2.5rem">
+  <h1 class="page-title">📬 Student Submissions</h1>
+  <p class="page-sub">Review all submissions from students in {{ cls.name }}</p>
+</div>
+
+{% if subs %}
+<div style="display:grid;gap:1.25rem">
+  {% for s in subs %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:var(--text)">{{ s.sname }}</div>
+        <div style="font-size:.8rem;color:var(--muted);font-family:monospace;margin-top:.25rem">{{ s.usn }}</div>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        {% if s.assignment_id %}
+          <span class="badge badge-purple" style="font-weight:700">📝 Assignment</span>
+          <span class="badge badge-gray" style="font-weight:600">{{ s.atitle }}</span>
+        {% else %}
+          <span class="badge badge-green" style="font-weight:700">👥 Group Topic</span>
+          <span class="badge badge-gray" style="font-weight:600">{{ s.gname }}</span>
+          <span class="badge badge-purple" style="font-weight:600">{{ s.ttitle }}</span>
+        {% endif %}
+        <span class="badge badge-amber" style="font-weight:600">📅 {{ s.submitted_at[:10] }}</span>
+      </div>
+    </div>
+    
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;opacity:.5">
+    
+    {% if s.content %}
+    <div style="background:var(--surface2);border-radius:8px;padding:1rem;margin-bottom:1rem;border-left:3px solid var(--primary);font-size:.88rem;line-height:1.6;color:var(--muted);white-space:pre-wrap;max-height:150px;overflow-y:auto">{{ s.content }}</div>
+    {% endif %}
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+      <div style="font-size:.8rem;color:var(--muted)">
+        <span style="font-weight:600">Submitted:</span> {{ s.submitted_at[:16] }}
+      </div>
+      {% if s.has_file %}
+      <a href="javascript:void(0)" class="btn btn-green btn-sm">
+        📥 Files Attached
+      </a>
+      {% else %}
+      <span style="font-size:.8rem;color:var(--muted);font-style:italic">No files attached</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty" style="padding:3rem">
+  <div class="empty-icon">📬</div>
+  <p>No submissions yet. Check back as students submit their work.</p>
+</div>
+{% endif %}
+{% endblock %}

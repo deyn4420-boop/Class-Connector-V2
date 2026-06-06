@@ -1,0 +1,6 @@
+flask>=2.3.0
+apscheduler>=3.10.0
+PyQt6>=6.5.0
+PyQt6-WebEngine>=6.5.0
+bleak>=0.21.0
+bless>=0.2.2

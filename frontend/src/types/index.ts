@@ -35,6 +35,8 @@ export interface Assignment {
   deadline: string
   createdAt: string
   createdBy: number
+  attachmentId?: number
+  attachmentName?: string
 }
 
 export interface Submission {

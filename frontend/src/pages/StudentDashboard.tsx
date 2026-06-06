@@ -57,7 +57,7 @@ export const StudentDashboard: React.FC = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-4xl font-bold mb-2">Welcome back! 👋</h2>
-          <p className="text-muted">Your class: <span className="text-primary font-bold">{data.class.name}</span> • Teacher: <span className="font-semibold">{data.class.teacher}</span></p>
+          <p className="text-muted">Your class: <span className="text-primary font-bold">{data.class?.name || 'Unknown'}</span> • Teacher: <span className="font-semibold">{data.class?.teacher || 'Unknown'}</span></p>
         </div>
 
         {/* Statistics */}

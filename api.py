@@ -424,6 +424,15 @@ def delete_note(note_id):
 @api_bp.route('/assignments', methods=['GET'])
 @auth_required()
 def get_assignments():
+    def format_assignments(rows):
+        assignments = []
+        for a in rows:
+            row = dict(a)
+            row['attachmentId'] = row.pop('attachment_id', None)
+            row['attachmentName'] = row.pop('attachment_name', None)
+            assignments.append(row)
+        return assignments
+
     conn = get_db()
     role = session.get('role')
     if role == 'teacher':
@@ -432,39 +441,80 @@ def get_assignments():
             conn.close()
             return jsonify({'success': True, 'data': []})
         assignments = conn.execute(
-            '''SELECT a.*, (SELECT COUNT(*) FROM submissions WHERE assignment_id=a.id) as subs
+            '''SELECT a.*, (SELECT COUNT(*) FROM submissions WHERE assignment_id=a.id) as subs,
+                      (SELECT id FROM file_uploads WHERE assignment_id=a.id ORDER BY uploaded_at DESC LIMIT 1) as attachment_id,
+                      (SELECT original_filename FROM file_uploads WHERE assignment_id=a.id ORDER BY uploaded_at DESC LIMIT 1) as attachment_name
                FROM assignments a WHERE a.class_id=? ORDER BY a.deadline ASC''', (cls['id'],)).fetchall()
     else:
         assignments = conn.execute('''
             SELECT a.*, c.name as cname,
-                   (SELECT id FROM submissions WHERE assignment_id=a.id AND student_id=?) as submitted
+                   (SELECT id FROM submissions WHERE assignment_id=a.id AND student_id=?) as submitted,
+                   (SELECT id FROM file_uploads WHERE assignment_id=a.id ORDER BY uploaded_at DESC LIMIT 1) as attachment_id,
+                   (SELECT original_filename FROM file_uploads WHERE assignment_id=a.id ORDER BY uploaded_at DESC LIMIT 1) as attachment_name
             FROM assignments a JOIN classes c ON a.class_id=c.id
             JOIN enrollments e ON c.id=e.class_id WHERE e.student_id=? ORDER BY a.deadline ASC''',
             (session['user_id'], session['user_id'])).fetchall()
     conn.close()
-    return jsonify({'success': True, 'data': [dict(a) for a in assignments]})
+    return jsonify({'success': True, 'data': format_assignments(assignments)})
 
 @api_bp.route('/assignments', methods=['POST'])
 @auth_required('teacher')
 def create_assignment():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
+    if not data:
+        data = request.form.to_dict()
+
     title = data.get('title', '').strip()
     description = data.get('description', '').strip()
     subject = data.get('subject', 'General').strip()
     deadline = data.get('deadline', '').strip()
+    file = request.files.get('file') if request.files else None
+
     if not title or not deadline:
         return jsonify({'success': False, 'message': 'Title and deadline required'}), 400
+    if file and file.filename == '':
+        file = None
+    if file and not allowed_file(file.filename):
+        return jsonify({'success': False, 'message': 'File type not allowed'}), 400
+
+    if file:
+        file.seek(0, 2)
+        size = file.tell()
+        if size > MAX_FILE_SIZE:
+            return jsonify({'success': False, 'message': f'File too large (max {MAX_FILE_SIZE/(1024*1024):.0f}MB)'}), 400
+        file.seek(0)
+
     conn = get_db()
     cls = get_teacher_class(conn)
     if not cls:
         conn.close()
         return jsonify({'success': False, 'message': 'Class not found'}), 404
-    conn.execute('INSERT INTO assignments(class_id,teacher_id,title,description,subject,deadline) VALUES(?,?,?,?,?,?)',
-                 (cls['id'], session['user_id'], title, description, subject, deadline))
-    notify_class(conn, cls['id'], f'📝 New assignment: {title} | Due: {deadline[:16]}')
-    conn.commit()
-    conn.close()
-    return jsonify({'success': True, 'message': 'Assignment created successfully'}), 201
+
+    try:
+        cur = conn.execute(
+            'INSERT INTO assignments(class_id,teacher_id,title,description,subject,deadline) VALUES(?,?,?,?,?,?)',
+            (cls['id'], session['user_id'], title, description, subject, deadline)
+        )
+        assignment_id = cur.lastrowid
+
+        if file:
+            stored_name = secure_filename_custom(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, stored_name)
+            file.save(filepath)
+            conn.execute(
+                '''INSERT INTO file_uploads(assignment_id, uploader_id, original_filename, stored_filename, file_size, file_type)
+                   VALUES(?, ?, ?, ?, ?, ?)''',
+                (assignment_id, session['user_id'], file.filename, stored_name,
+                 size, file.content_type or 'application/octet-stream')
+            )
+
+        notify_class(conn, cls['id'], f'📝 New assignment: {title} | Due: {deadline[:16]}')
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Assignment created successfully'}), 201
+    except Exception as e:
+        conn.close()
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @api_bp.route('/assignments/<int:aid>/submit', methods=['POST'])
 @auth_required('student')
@@ -976,6 +1026,19 @@ def download_file_api(file_id):
             if a and a['teacher_id'] == session.get('user_id'):
                 authorized = True
     
+    if not authorized:
+        # Allow assignment attachment downloads for enrolled students
+        if file_rec['assignment_id']:
+            assignment = conn.execute('SELECT * FROM assignments WHERE id=?', (file_rec['assignment_id'],)).fetchone()
+            if assignment:
+                if session.get('role') == 'student':
+                    enrolled = conn.execute('SELECT 1 FROM enrollments WHERE student_id=? AND class_id=?',
+                                            (session['user_id'], assignment['class_id'])).fetchone()
+                    if enrolled:
+                        authorized = True
+                elif session.get('role') == 'teacher' and assignment['teacher_id'] == session.get('user_id'):
+                    authorized = True
+
     if not authorized:
         conn.close()
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403

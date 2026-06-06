@@ -91,6 +91,8 @@ CREATE TABLE IF NOT EXISTS submissions (
     student_id INTEGER NOT NULL,
     group_id INTEGER,
     content TEXT,
+    grade INTEGER,
+    feedback TEXT,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (assignment_id) REFERENCES assignments(id),
     FOREIGN KEY (topic_id) REFERENCES topics(id),

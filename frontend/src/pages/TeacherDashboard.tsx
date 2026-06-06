@@ -3,6 +3,7 @@
  */
 
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, Stat, Badge, Button, Skeleton } from '@/components/ui'
 import { useAsync } from '@/hooks'
 import { apiClient } from '@/utils/api'
@@ -25,6 +26,7 @@ interface TeacherDashboardData {
 }
 
 export const TeacherDashboard: React.FC = () => {
+  const navigate = useNavigate()
   const { data, loading, error } = useAsync<TeacherDashboardData>(() =>
     apiClient.getTeacherDashboard().then((res) => res.data)
   )
@@ -99,16 +101,32 @@ export const TeacherDashboard: React.FC = () => {
           {/* Quick Stats */}
           <Card title="⚡ Quick Actions">
             <div className="space-y-2">
-              <Button className="w-full justify-center" variant="primary">
+              <Button
+                className="w-full justify-center"
+                variant="primary"
+                onClick={() => navigate('/teacher/assignments')}
+              >
                 Create Assignment
               </Button>
-              <Button className="w-full justify-center" variant="secondary">
+              <Button
+                className="w-full justify-center"
+                variant="secondary"
+                onClick={() => navigate('/teacher/attendance')}
+              >
                 Mark Attendance
               </Button>
-              <Button className="w-full justify-center" variant="secondary">
+              <Button
+                className="w-full justify-center"
+                variant="secondary"
+                onClick={() => navigate('/teacher/events')}
+              >
                 Create Event
               </Button>
-              <Button className="w-full justify-center" variant="secondary">
+              <Button
+                className="w-full justify-center"
+                variant="secondary"
+                onClick={() => navigate('/teacher/progress')}
+              >
                 View Progress
               </Button>
             </div>

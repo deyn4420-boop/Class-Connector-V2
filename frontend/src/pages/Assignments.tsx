@@ -15,6 +15,8 @@ interface Assignment {
   description: string
   deadline: string
   createdAt: string
+  attachmentId?: number
+  attachmentName?: string
 }
 
 export const StudentAssignments: React.FC = () => {
@@ -63,10 +65,21 @@ export const StudentAssignments: React.FC = () => {
                         Due: {format(new Date(assignment.deadline), 'PPpp')}
                       </p>
                     </div>
-                    <Button size="sm" className="flex-shrink-0">
-                      <Send size={16} />
-                      Submit
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      {assignment.attachmentId && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => window.open(`/api/download/${assignment.attachmentId}`, '_blank')}
+                        >
+                          📄 {assignment.attachmentName || 'Attachment'}
+                        </Button>
+                      )}
+                      <Button size="sm" className="flex-shrink-0">
+                        <Send size={16} />
+                        Submit
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               )
@@ -85,6 +98,7 @@ export const StudentAssignments: React.FC = () => {
 
 export const TeacherAssignments: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const { data: assignments, loading } = useAsync<Assignment[]>(() =>
     apiClient.getAssignments().then((res) => res.data || []),
@@ -94,8 +108,9 @@ export const TeacherAssignments: React.FC = () => {
   const { values, errors, isSubmitting, handleChange, handleSubmit } = useForm(
     { title: '', description: '', deadline: '' },
     async (values) => {
-      await apiClient.createAssignment(values.title, values.description, values.deadline)
+      await apiClient.createAssignment(values.title, values.description, values.deadline, file || undefined)
       setIsModalOpen(false)
+      setFile(null)
       setRefreshKey((prev) => prev + 1)
     }
   )
@@ -154,6 +169,16 @@ export const TeacherAssignments: React.FC = () => {
               onChange={handleChange}
               error={errors.deadline as string}
             />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-muted">Attachment (optional)</label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                className="block w-full text-sm text-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white"
+              />
+              {file && <p className="text-xs text-muted">Selected: {file.name}</p>}
+            </div>
           </form>
         </Modal>
 
@@ -165,13 +190,23 @@ export const TeacherAssignments: React.FC = () => {
           <div className="space-y-4">
             {assignments.map((assignment) => (
               <Card key={assignment.id}>
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-bold mb-2">{assignment.title}</h3>
                     <p className="text-muted text-sm mb-3">{assignment.description}</p>
                     <p className="text-xs text-muted">
                       Due: {format(new Date(assignment.deadline), 'PPpp')}
                     </p>
+                    {assignment.attachmentId && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => window.open(`/api/download/${assignment.attachmentId}`, '_blank')}
+                      >
+                        Download {assignment.attachmentName || 'Attachment'}
+                      </Button>
+                    )}
                   </div>
                   <Button variant="secondary" size="sm">
                     View Submissions

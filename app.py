@@ -42,6 +42,8 @@ def init_db():
     # Safely add columns that may already exist (SQLite has no ADD COLUMN IF NOT EXISTS)
     for stmt in [
         'ALTER TABLE submissions ADD COLUMN has_file INTEGER DEFAULT 0',
+        'ALTER TABLE submissions ADD COLUMN grade INTEGER',
+        'ALTER TABLE submissions ADD COLUMN feedback TEXT',
         'ALTER TABLE assignments ADD COLUMN allow_file_upload INTEGER DEFAULT 1',
     ]:
         try:

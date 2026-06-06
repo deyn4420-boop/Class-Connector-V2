@@ -3,7 +3,7 @@
  * All communication with Flask backend goes through here
  */
 import axios from 'axios';
-const API_BASE_URL = (import.meta.env?.VITE_API_URL) || 'http://localhost:5000/api';
+const API_BASE_URL = (import.meta.env?.VITE_API_URL) || '/api';
 export class ApiClient {
     constructor() {
         Object.defineProperty(this, "client", {
@@ -30,7 +30,7 @@ export class ApiClient {
     }
     // Auth endpoints
     async register(name, email, password, role, staffIdOrUsn, classCode, className) {
-        return this.client.post('/register', {
+        const response = await this.client.post('/register', {
             name,
             email,
             password,
@@ -40,102 +40,138 @@ export class ApiClient {
             class_code: classCode,
             class_name: className,
         });
+        return response.data;
     }
     async login(email, password) {
         const response = await this.client.post('/login', { email, password });
         return response.data;
     }
     async logout() {
-        return this.client.post('/logout');
+        const response = await this.client.post('/logout');
+        return response.data;
     }
     async getSession() {
-        return this.client.get('/session');
+        const response = await this.client.get('/session');
+        return response.data;
     }
     // Dashboard/Data endpoints
     async getStudentDashboard() {
-        return this.client.get('/student/dashboard');
+        const response = await this.client.get('/student/dashboard');
+        return response.data;
     }
     async getTeacherDashboard() {
-        return this.client.get('/teacher/dashboard');
+        const response = await this.client.get('/teacher/dashboard');
+        return response.data;
     }
     // Class endpoints
     async getClass() {
-        return this.client.get('/class');
+        const response = await this.client.get('/class');
+        return response.data;
     }
     // Notes endpoints
     async getNotes() {
-        return this.client.get('/notes');
+        const response = await this.client.get('/notes');
+        return response.data;
     }
     async createNote(title, content) {
-        return this.client.post('/notes', { title, content });
+        const response = await this.client.post('/notes', { title, content });
+        return response.data;
     }
     async deleteNote(noteId) {
-        return this.client.delete(`/notes/${noteId}`);
+        const response = await this.client.delete(`/notes/${noteId}`);
+        return response.data;
     }
     // Assignments endpoints
     async getAssignments() {
-        return this.client.get('/assignments');
+        const response = await this.client.get('/assignments');
+        return response.data;
     }
-    async createAssignment(title, description, deadline) {
-        return this.client.post('/assignments', {
+    async createAssignment(title, description, deadline, file) {
+        if (file) {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('deadline', deadline);
+            formData.append('file', file);
+            const response = await this.client.post('/assignments', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+        }
+        const response = await this.client.post('/assignments', {
             title,
             description,
             deadline,
         });
+        return response.data;
     }
     async submitAssignment(assignmentId, filePath) {
-        return this.client.post(`/assignments/${assignmentId}/submit`, {
+        const response = await this.client.post(`/assignments/${assignmentId}/submit`, {
             file_path: filePath,
         });
+        return response.data;
     }
     // Groups endpoints
     async getGroups() {
-        return this.client.get('/groups');
+        const response = await this.client.get('/groups');
+        return response.data;
     }
     async createGroup(name, members) {
-        return this.client.post('/groups', { name, members });
+        const response = await this.client.post('/groups', { name, members });
+        return response.data;
     }
     // Attendance endpoints
     async getAttendance() {
-        return this.client.get('/attendance');
+        const response = await this.client.get('/attendance');
+        return response.data;
     }
     async markAttendance(studentId, status) {
-        return this.client.post('/attendance', { student_id: studentId, status });
+        const response = await this.client.post('/attendance', { student_id: studentId, status });
+        return response.data;
     }
     // Progress endpoints
     async getProgress() {
-        return this.client.get('/progress');
+        const response = await this.client.get('/progress');
+        return response.data;
     }
     // Events endpoints
     async getEvents() {
-        return this.client.get('/events');
+        const response = await this.client.get('/events');
+        return response.data;
     }
     async createEvent(title, eventDate, eventType) {
-        return this.client.post('/events', { title, event_date: eventDate, event_type: eventType });
+        const response = await this.client.post('/events', { title, event_date: eventDate, event_type: eventType });
+        return response.data;
     }
     // Notifications endpoints
     async getNotifications() {
-        return this.client.get('/notifications');
+        const response = await this.client.get('/notifications');
+        return response.data;
     }
     async markNotificationRead(notificationId) {
-        return this.client.put(`/notifications/${notificationId}/read`);
+        const response = await this.client.put(`/notifications/${notificationId}/read`);
+        return response.data;
     }
     // Submissions endpoints (teacher only)
     async getSubmissions() {
-        return this.client.get('/teacher/submissions');
+        const response = await this.client.get('/teacher/submissions');
+        return response.data;
     }
     async gradeSubmission(submissionId, grade, feedback) {
-        return this.client.put(`/submissions/${submissionId}/grade`, {
+        const response = await this.client.put(`/submissions/${submissionId}/grade`, {
             grade,
             feedback,
         });
+        return response.data;
     }
     // Settings endpoints
     async getSettings() {
-        return this.client.get('/settings');
+        const response = await this.client.get('/settings');
+        return response.data;
     }
     async updateSettings(settings) {
-        return this.client.put('/settings', settings);
+        const response = await this.client.put('/settings', settings);
+        return response.data;
     }
 }
 export const apiClient = new ApiClient();

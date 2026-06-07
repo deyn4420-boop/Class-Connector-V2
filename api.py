@@ -66,13 +66,14 @@ def debug_path():
 def register():
     """Register a new user"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         name = data.get('name', '').strip()
         email = data.get('email', '').strip().lower()
-        password = hp(data.get('password', ''))
+        raw_password = data.get('password', '')
+        password = hp(raw_password)
         role = data.get('role', '').lower()
 
-        if not all([name, email, password, role]) or role not in ['student', 'teacher']:
+        if not all([name, email, raw_password, role]) or role not in ['student', 'teacher']:
             return api_response(False, message='Invalid input'), 400
 
         conn = get_db()

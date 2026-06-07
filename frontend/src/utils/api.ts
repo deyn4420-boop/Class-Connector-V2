@@ -43,17 +43,24 @@ export class ApiClient {
     classCode?: string,
     className?: string
   ): Promise<ApiResponse> {
-    const response = await this.client.post('/register', {
-      name,
-      email,
-      password,
-      role,
-      staff_id: role === 'teacher' ? staffIdOrUsn : undefined,
-      usn: role === 'student' ? staffIdOrUsn : undefined,
-      class_code: classCode,
-      class_name: className,
-    })
-    return response.data
+    try {
+      const response = await this.client.post('/register', {
+        name,
+        email,
+        password,
+        role,
+        staff_id: role === 'teacher' ? staffIdOrUsn : undefined,
+        usn: role === 'student' ? staffIdOrUsn : undefined,
+        class_code: classCode,
+        class_name: className,
+      })
+      return response.data
+    } catch (error: any) {
+      if (error.response?.data) {
+        return error.response.data
+      }
+      throw error
+    }
   }
 
   async login(email: string, password: string): Promise<ApiResponse<Session>> {

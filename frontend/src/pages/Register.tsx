@@ -15,6 +15,21 @@ export const RegisterPage: React.FC = () => {
   const { values, errors, isSubmitting, handleChange, handleSubmit, setFieldError } = useForm(
     { name: '', email: '', password: '', confirmPassword: '', staffIdOrUsn: '', classCode: '', className: '' },
     async (formValues) => {
+      if (!formValues.name.trim() || !formValues.email.trim() || !formValues.password || !formValues.confirmPassword) {
+        setFieldError('submit' as any, 'Please fill in all required fields.')
+        return
+      }
+
+      if (role === 'teacher' && !formValues.staffIdOrUsn.trim()) {
+        setFieldError('submit' as any, 'Please enter your staff ID.')
+        return
+      }
+
+      if (role === 'student' && (!formValues.staffIdOrUsn.trim() || !formValues.classCode.trim())) {
+        setFieldError('submit' as any, 'Please enter your USN and class code.')
+        return
+      }
+
       if (formValues.password !== formValues.confirmPassword) {
         setFieldError('confirmPassword' as any, 'Passwords do not match')
         return
@@ -34,10 +49,10 @@ export const RegisterPage: React.FC = () => {
         if (response.success) {
           navigate('/login')
         } else {
-          setFieldError('email' as any, response.message || 'Registration failed')
+          setFieldError('submit' as any, response.message || 'Registration failed')
         }
       } catch (error) {
-        setFieldError('email' as any, 'Registration failed. Please try again.')
+        setFieldError('submit' as any, 'Registration failed. Please try again.')
       }
     }
   )
@@ -161,6 +176,10 @@ export const RegisterPage: React.FC = () => {
               <UserPlus size={18} />
               Create Account
             </Button>
+
+            {errors.submit && (
+              <p className="text-center text-sm text-red-500 mt-2">{errors.submit as string}</p>
+            )}
 
             <p className="text-center text-sm text-muted">
               Already have an account?{' '}
